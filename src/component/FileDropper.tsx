@@ -38,7 +38,7 @@ export const FileDropper = ({ dropDrive }: { dropDrive: (drive: FileSystemDirect
 	return (
 		<div
 			{...(dropped ? { "data-dropped": true } : null)}
-			style={{ backgroundColor: dragState === "ok" ? "#dddddd" : dragState === "wrong" ? "#eecccc" : "" }}
+			style={{ backgroundColor: dragState === "ok" ? "#77777755" : dragState === "wrong" ? "#99444455" : "" }}
 			className={styles.dropTarget}
 			onDrop={onDrop}
 			onDragOver={onDragOver}

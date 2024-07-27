@@ -1,3 +1,4 @@
-import { discord, discordCanary } from "./discord";
+import { discord, discordCanary, discordPtb } from "./discord";
+import { CacheLocation } from "./location";
 
-export const cacheLocations = [discord, discordCanary];
+export const cacheLocations: CacheLocation[] = [discord, discordPtb, discordCanary];

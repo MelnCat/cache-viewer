@@ -7,13 +7,13 @@ import { cacheLocations } from "./locations/locations";
 import { filterEntries } from "./util/fs";
 
 function App() {
-	const [data, setData] = useState<{ location: CacheLocation; items: CacheItem[] | null }[] | null>(null);
+	const [data, setData] = useState<{ location: CacheLocation; items: CacheItem[] | undefined }[] | null>(null);
 	const dropDrive = async (drive: FileSystemDirectoryHandle) => {
 		const newData: typeof data = [];
 		for (const location of cacheLocations) {
 			const userDirectories = await filterEntries(await drive.getDirectoryHandle("Users"), "directory");
 			const cache = await location.scanForItems(drive, userDirectories);
-			if (!cache) newData.push({ location, items: null });
+			if (!cache) newData.push({ location, items: undefined });
 			else newData.push({ location, items: cache });
 		}
 		setData(newData);

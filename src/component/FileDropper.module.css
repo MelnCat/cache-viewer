@@ -2,13 +2,18 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: #eeeeee;
-	border: dotted black 2px;
+	background-color: #77777733;
+	border: dotted #999999 2px;
 	width: 42em;
 	height: 6em;
 }
 .dropTarget[data-dropped] {
-	background-color: #dddddd;
+	background-color: #77777777;
 	border: dotted #333333 2px;
 	cursor: not-allowed;
+}
+@media (prefers-color-scheme: light) {
+	.dropTarget {
+		border: dotted black 2px;
+	}
 }
