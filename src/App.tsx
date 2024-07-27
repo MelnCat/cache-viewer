@@ -37,7 +37,7 @@ const filterEntries = async <T extends "file" | "directory">(
 function App() {
 	const [dragging, setDragging] = useState(false);
 	const [data, setData] = useState<{ url: string; title: string; last_visit_time: number }[]>([]);
-	const parseDrive = async(drive: FileSystemDirectoryHandle) => {
+	const parseDrive = async (drive: FileSystemDirectoryHandle) => {
 		const users = await findEntry(drive, "directory", x => x.name === "Users");
 		if (!users) return;
 		for await (const user of users.values()) {
@@ -47,12 +47,13 @@ function App() {
 			let found = false;
 			try {
 				const chromeFolder = await getDirectory(user, `AppData/Local/Google/Chrome/User Data`.split("/"));
+				console.log("chrome", chromeFolder);
 				if (!chromeFolder) continue;
 				const profiles = await filterEntries(chromeFolder, "directory", x => x.name === "Default" || x.name.startsWith("Profile "));
 				for (const profile of profiles) {
 					try {
 						const history = await profile.getFileHandle("History");
-						const db = new SQL.Database(new Uint8Array(await(await history.getFile()).arrayBuffer()));
+						const db = new SQL.Database(new Uint8Array(await (await history.getFile()).arrayBuffer()));
 						const statement = db.prepare("SELECT * FROM 'urls' ORDER BY last_visit_time DESC LIMIT 100");
 						const historyList: { url: string; title: string; last_visit_time: number }[] = [];
 						while (statement.step()) historyList.push(statement.getAsObject() as (typeof historyList)[number]);
@@ -63,6 +64,7 @@ function App() {
 						);
 						found = true;
 					} catch (e) {
+						console.log("err chrome");
 						continue;
 					}
 				}
@@ -71,12 +73,16 @@ function App() {
 			}
 			try {
 				const firefoxFolder = await getDirectory(user, `AppData/Roaming/Mozilla/Firefox/Profiles`.split("/"));
-				if (!firefoxFolder) continue;
+				if (!firefoxFolder) {
+					console.log("no ff");
+					continue;
+				}
 				const profiles = await filterEntries(firefoxFolder, "directory");
 				for (const profile of profiles) {
+					console.log("prof", profile)
 					try {
 						const history = await profile.getFileHandle("places.sqlite");
-						const db = new SQL.Database(new Uint8Array(await(await history.getFile()).arrayBuffer()));
+						const db = new SQL.Database(new Uint8Array(await (await history.getFile()).arrayBuffer()));
 						const statement = db.prepare("SELECT * FROM 'moz_places' ORDER BY last_visit_date DESC LIMIT 100");
 						const historyList: { url: string; title: string; last_visit_time: number }[] = [];
 						while (statement.step()) {
@@ -86,13 +92,14 @@ function App() {
 						setData(d => d.concat(historyList).sort((a, b) => b.last_visit_time - a.last_visit_time));
 						found = true;
 					} catch (e) {
+						console.log("err ff");
 						continue;
 					}
 				}
 			} catch {
 				/* noop */
 			}
-			console.log(found)
+			console.log(found);
 		}
 	};
 	const onDrop = async (event: React.DragEvent) => {
