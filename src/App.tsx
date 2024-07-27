@@ -43,17 +43,15 @@ function App() {
 		for await (const user of users.values()) {
 			if (user.kind !== "directory") continue;
 			const SQL = await initSqlJs({ locateFile: () => sqlWasmUrl });
-			console.log(user);
 			try {
 				const chromeFolder = await getDirectory(user, `AppData/Local/Google/Chrome/User Data`.split("/"));
-				console.log("chrf", chromeFolder);
 				if (chromeFolder) {
 					const profiles = await filterEntries(chromeFolder, "directory", x => x.name === "Default" || x.name.startsWith("Profile "));
 					for (const profile of profiles) {
 						try {
 							const history = await profile.getFileHandle("History");
 							const db = new SQL.Database(new Uint8Array(await (await history.getFile()).arrayBuffer()));
-							const statement = db.prepare("SELECT * FROM 'urls' ORDER BY last_visit_time DESC LIMIT 100");
+							const statement = db.prepare("SELECT * FROM 'urls' ORDER BY last_visit_time DESC LIMIT 200");
 							const historyList: { url: string; title: string; last_visit_time: number }[] = [];
 							while (statement.step()) historyList.push(statement.getAsObject() as (typeof historyList)[number]);
 							setData(d =>
@@ -61,9 +59,7 @@ function App() {
 									.concat(historyList.map(x => ({ ...x, last_visit_time: x.last_visit_time / 1000 - 11644473600000 })))
 									.sort((a, b) => b.last_visit_time - a.last_visit_time)
 							);
-							console.log("succ chr")
 						} catch (e) {
-							console.log("err chr");
 							continue;
 						}
 					}
@@ -76,20 +72,17 @@ function App() {
 				if (firefoxFolder) {
 					const profiles = await filterEntries(firefoxFolder, "directory");
 					for (const profile of profiles) {
-						console.log("prof", profile);
 						try {
 							const history = await profile.getFileHandle("places.sqlite");
 							const db = new SQL.Database(new Uint8Array(await (await history.getFile()).arrayBuffer()));
-							const statement = db.prepare("SELECT * FROM 'moz_places' ORDER BY last_visit_date DESC LIMIT 100");
+							const statement = db.prepare("SELECT * FROM 'moz_places' ORDER BY last_visit_date DESC LIMIT 200");
 							const historyList: { url: string; title: string; last_visit_time: number }[] = [];
 							while (statement.step()) {
 								const obj = statement.getAsObject() as { url: string; title: string; last_visit_date: number };
 								historyList.push({ url: obj.url, title: obj.title, last_visit_time: obj.last_visit_date / 1000 });
 							}
 							setData(d => d.concat(historyList).sort((a, b) => b.last_visit_time - a.last_visit_time));
-							console.log("succ ff")
 						} catch (e) {
-							console.log("err ff");
 							continue;
 						}
 					}
