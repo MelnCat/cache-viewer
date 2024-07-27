@@ -7,7 +7,7 @@ import sqlWasmUrl from "sql.js/dist/sql-wasm.wasm?url";
 import initSqlJs from "sql.js/dist/sql-wasm.js";
 import * as idb from "idb";
 
-const getDirectory = async (initial: FileSystemDirectoryHandle, path: string[]): Promise<FileSystemDirectoryHandle | null> => {
+const getDirectory = async (initial: FileSystemDirectoryHandle, path: string[]): Promise<FileSystemDirectoryHandle | undefined> => {
 	try {
 		const directory = await initial.getDirectoryHandle(path[0]);
 		if (path.length > 1) return getDirectory(directory, path.slice(1));
