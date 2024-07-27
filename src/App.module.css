@@ -7,3 +7,7 @@
 	width: 42em;
 	height: 6em;
 }
+.historyList {
+	max-width: 100%;
+	word-break: break-all;
+}
