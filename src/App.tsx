@@ -1,16 +1,24 @@
 import "native-file-system-adapter";
 import { useState } from "react";
-import initSqlJs from "sql.js/dist/sql-wasm.js";
-import sqlWasmUrl from "sql.js/dist/sql-wasm.wasm?url";
-import styles from "./App.module.css";
-import { fileTypeFromBlob } from "file-type";
 import { CacheItem, CacheLocation } from "./locations/location";
 import { FileDropper } from "./component/FileDropper";
+import { CacheViewer } from "./component/CacheViewer";
+import { cacheLocations } from "./locations/locations";
+import { filterEntries } from "./util/fs";
 
 function App() {
-	const [data, setData] = useState<{ location: CacheLocation; items: CacheItem }[] | null>(null);
-	const dropDrive = (drive: FileSystemDirectoryHandle) => {};
-	return <FileDropper dropDrive={dropDrive} />;
+	const [data, setData] = useState<{ location: CacheLocation; items: CacheItem[] | null }[] | null>(null);
+	const dropDrive = async (drive: FileSystemDirectoryHandle) => {
+		const newData: typeof data = [];
+		for (const location of cacheLocations) {
+			const userDirectories = await filterEntries(await drive.getDirectoryHandle("Users"), "directory");
+			const cache = await location.scanForItems(drive, userDirectories);
+			if (!cache) newData.push({ location, items: null });
+			else newData.push({ location, items: cache });
+		}
+		setData(newData);
+	};
+	return <>{data === null ? <FileDropper dropDrive={dropDrive} /> : <CacheViewer data={data} />}</>;
 }
 
 export default App;

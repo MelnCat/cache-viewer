@@ -6,6 +6,10 @@ export const FileDropper = ({ dropDrive }: { dropDrive: (drive: FileSystemDirect
 	const [dropped, setDropped] = useState(false);
 	const onDrop = async (event: React.DragEvent) => {
 		event.preventDefault();
+		if (dragState === "wrong") {
+			setDragState(null);
+			return;
+		}
 		setDragState(null);
 		const cDrive = await (async () => {
 			for (const file of event.dataTransfer.items) {
@@ -22,8 +26,13 @@ export const FileDropper = ({ dropDrive }: { dropDrive: (drive: FileSystemDirect
 	};
 	const onDragOver = async (event: React.DragEvent) => {
 		event.preventDefault();
-		for (const file of event.dataTransfer.items) {
-			console.log(file.type)
+		if (![...event.dataTransfer.items].every(x => x.kind === "file")) {
+			setDragState("wrong");
+			event.dataTransfer.dropEffect = "none";
+		} else {
+			setDragState("ok");
+			event.dataTransfer.effectAllowed = "link";
+			event.dataTransfer.dropEffect = "link";
 		}
 	};
 	return (
@@ -35,7 +44,7 @@ export const FileDropper = ({ dropDrive }: { dropDrive: (drive: FileSystemDirect
 			onDragOver={onDragOver}
 			onDragLeave={onDragLeave}
 		>
-			Drag and drop the C: Drive here
+			{dragState === "wrong" ? "That is not the C: Drive" : dropped ? "Loading..." : "Drag and drop the C: Drive here"}
 		</div>
 	);
 };
