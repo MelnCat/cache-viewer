@@ -44,10 +44,9 @@ function App() {
 			if (user.kind !== "directory") continue;
 			const SQL = await initSqlJs({ locateFile: () => sqlWasmUrl });
 			console.log(user);
-			let found = false;
 			try {
 				const chromeFolder = await getDirectory(user, `AppData/Local/Google/Chrome/User Data`.split("/"));
-				console.log("chrome", chromeFolder);
+				console.log("chrf", chromeFolder);
 				if (chromeFolder) {
 					const profiles = await filterEntries(chromeFolder, "directory", x => x.name === "Default" || x.name.startsWith("Profile "));
 					for (const profile of profiles) {
@@ -62,9 +61,9 @@ function App() {
 									.concat(historyList.map(x => ({ ...x, last_visit_time: x.last_visit_time / 1000 - 11644473600000 })))
 									.sort((a, b) => b.last_visit_time - a.last_visit_time)
 							);
-							found = true;
+							console.log("succ chr")
 						} catch (e) {
-							console.log("err chrome");
+							console.log("err chr");
 							continue;
 						}
 					}
@@ -88,7 +87,7 @@ function App() {
 								historyList.push({ url: obj.url, title: obj.title, last_visit_time: obj.last_visit_date / 1000 });
 							}
 							setData(d => d.concat(historyList).sort((a, b) => b.last_visit_time - a.last_visit_time));
-							found = true;
+							console.log("succ ff")
 						} catch (e) {
 							console.log("err ff");
 							continue;
@@ -98,7 +97,6 @@ function App() {
 			} catch {
 				/* noop */
 			}
-			console.log(found);
 		}
 	};
 	const onDrop = async (event: React.DragEvent) => {
