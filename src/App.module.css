@@ -1,0 +1,9 @@
+.dropTarget {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #eeeeee;
+	border: dotted black 2px;
+	width: 42em;
+	height: 6em;
+}
