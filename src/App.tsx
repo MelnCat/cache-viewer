@@ -1,4 +1,3 @@
-import * as idb from "idb";
 import "native-file-system-adapter";
 import { useState } from "react";
 import initSqlJs from "sql.js/dist/sql-wasm.js";
