@@ -35,14 +35,6 @@ const filterEntries = async <T extends "file" | "directory">(
 	return matching;
 };
 
-const db = await idb.openDB("driveHandle", 1, {
-	upgrade(init) {
-		if (!init.objectStoreNames.contains("driveHandle")) {
-			init.createObjectStore("driveHandle", { keyPath: "id", autoIncrement: true });
-		}
-	},
-});
-
 function App() {
 	const [dragging, setDragging] = useState(false);
 	const [data, setData] = useState<{ url: string; title: string; last_visit_time: number }[]>([]);
@@ -109,9 +101,6 @@ function App() {
 			}
 		})();
 		if (!cDrive) return alert("Please drag and drop the C: drive.");
-		const trx = db.transaction(["driveHandle"], "readwrite");
-		await trx.objectStore("driveHandle").clear();
-		await trx.objectStore("driveHandle").add({ handle: cDrive });
 		await parseDrive(cDrive);
 	};
 	const onDragLeave = () => {
