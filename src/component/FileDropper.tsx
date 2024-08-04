@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./FileDropper.module.css";
 
-export const FileDropper = ({ dropDrive }: { dropDrive: (drive: FileSystemDirectoryHandle) => void }) => {
+export const FileDropper = ({ dropDrive, status }: { dropDrive: (drive: FileSystemDirectoryHandle) => void, status: string | null }) => {
 	const [dragState, setDragState] = useState<null | "wrong" | "ok">(null);
 	const [dropped, setDropped] = useState(false);
 	const onDrop = async (event: React.DragEvent) => {
@@ -44,7 +44,7 @@ export const FileDropper = ({ dropDrive }: { dropDrive: (drive: FileSystemDirect
 			onDragOver={onDragOver}
 			onDragLeave={onDragLeave}
 		>
-			{dragState === "wrong" ? "That is not the C: Drive" : dropped ? "Loading..." : "Drag and drop the C: Drive here"}
+			{status ?? (dragState === "wrong" ? "That is not the C: Drive" : dropped ? "Loading..." : "Drag and drop the C: Drive here")}
 		</div>
 	);
 };

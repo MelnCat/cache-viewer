@@ -1,15 +1,14 @@
-import { decompress, decompressSync } from "fflate";
 import { fileTypeFromBlob, FileTypeResult } from "file-type";
+import { decompress } from "wasm-gzip";
+import { fileType } from "../util/util";
 
 export interface UnprocessedCacheItem {
 	id: string;
-	blob: Blob;
 	file: File;
 }
 
 export interface CacheItem {
 	id: string;
-	blob: Blob;
 	type: FileTypeResult | undefined;
 	url: string;
 	file: File;
@@ -17,18 +16,24 @@ export interface CacheItem {
 export class CacheLocation {
 	constructor(public name: string, protected scan: (cDrive: FileSystemDirectoryHandle, users: FileSystemDirectoryHandle[]) => Promise<UnprocessedCacheItem[] | undefined>) {}
 
-	async scanForItems(cDrive: FileSystemDirectoryHandle, users: FileSystemDirectoryHandle[]): Promise<CacheItem[] | undefined> {
+	async scanForItems(cDrive: FileSystemDirectoryHandle, users: FileSystemDirectoryHandle[], onUpdate: (current: number, max: number) => void): Promise<CacheItem[] | undefined> {
 		const items = await this.scan(cDrive, users);
 		if (!items) return;
+		let done = 0;
 		return (
 			await Promise.all(
 				items.map(async x => {
-					const type = await fileTypeFromBlob(x.blob);
-					if (type?.mime === "application/gzip") {
-						const newBlob = new Blob([decompressSync(new Uint8Array(await x.blob.arrayBuffer()))]);
-						return { ...x, type: await fileTypeFromBlob(newBlob), blob: newBlob, url: URL.createObjectURL(newBlob) };
+					let timeout = setTimeout(() => console.log(x.file, "takin ga while"), 10000);
+					const type = await fileType(x.file);
+					clearTimeout(timeout);
+					if (type?.mime === "application/gzip" && x.file.size < 10000000) {
+						const newBlob = new Blob([decompress(new Uint8Array(await x.file.arrayBuffer()))]);
+						const newType = await fileType(newBlob);
+						onUpdate(++done, items.length);
+						return { ...x, type: newType, blob: newBlob, url: URL.createObjectURL(newBlob) };
 					}
-					return { ...x, type: await fileTypeFromBlob(x.blob), url: URL.createObjectURL(x.blob) };
+					onUpdate(++done, items.length);
+					return { ...x, type, url: URL.createObjectURL(x.file) };
 				})
 			)
 		).sort((a, b) => b.file.lastModified - a.file.lastModified);

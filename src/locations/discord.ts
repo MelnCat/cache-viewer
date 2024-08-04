@@ -11,7 +11,7 @@ class DiscordCacheLocation extends CacheLocation {
 					if (!cacheData) continue;
 					for await (const file of cacheData.values()) {
 						if (file.kind !== "file") continue;
-						items.push({ blob: await file.getFile(), id: file.name, file: await file.getFile() });
+						items.push({ id: `${user.name}/${file.name}`, file: await file.getFile() });
 					}
 				} catch {}
 			}
