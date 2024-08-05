@@ -7,6 +7,7 @@ export const CacheViewer = ({ data, decompress }: { data: { location: CacheLocat
 	const selectedData = useMemo(() => data.find(x => x.location.name === selected)!, [selected, data]);
 	const cacheContentRef = useRef<HTMLElement | null>(null);
 	const [showMisc, setShowMisc] = useState(false);
+	const [showBinary, setShowBinary] = useState(false);
 	return (
 		<main className={styles.main}>
 			<nav className={styles.navbar}>
@@ -26,6 +27,9 @@ export const CacheViewer = ({ data, decompress }: { data: { location: CacheLocat
 				<div>
 					<span>Show Miscellaneous</span> <input type="checkbox" onChange={x => setShowMisc(x.target.checked)} checked={showMisc} />
 				</div>
+				<div>
+					<span>Show Binary</span> <input type="checkbox" onChange={x => setShowBinary(x.target.checked)} checked={showMisc} />
+				</div>
 			</nav>
 			<article className={styles.cacheView}>
 				<h1>{selectedData.location.name}</h1>
@@ -39,7 +43,14 @@ export const CacheViewer = ({ data, decompress }: { data: { location: CacheLocat
 								className={styles.cacheItem}
 								style={{
 									backgroundColor: item.type?.mime.startsWith("image") ? "unset" : "",
-									display: item.type?.mime.startsWith("image") || item.type?.mime.startsWith("audio") || item.type?.mime.startsWith("video") || showMisc ? "" : "none",
+									display:
+										item.type === undefined
+											? showBinary
+												? ""
+												: "none"
+											: item.type?.mime.startsWith("image") || item.type?.mime.startsWith("audio") || item.type?.mime.startsWith("video") || showMisc
+											? ""
+											: "none",
 								}}
 							>
 								{item.type?.mime.startsWith("image") ? (
