@@ -55,7 +55,7 @@ function App() {
 		}
 		setData(newData);
 	};
-	return <>{data === null ? <FileDropper dropDrive={dropDrive} status={status} /> : <CacheViewer data={data} decompress={decompressFile} />}</>;
+	return <><h1>Cache Viewer</h1>{data === null ? <FileDropper dropDrive={dropDrive} status={status} /> : <CacheViewer data={data} decompress={decompressFile} />}</>;
 }
 
 export default App;
