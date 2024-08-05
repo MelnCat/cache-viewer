@@ -2,10 +2,11 @@ import { useMemo, useRef, useState } from "react";
 import { CacheItem, CacheLocation } from "../locations/location";
 import styles from "./CacheViewer.module.css";
 
-export const CacheViewer = ({ data }: { data: { location: CacheLocation; items: CacheItem[] | undefined }[] }) => {
+export const CacheViewer = ({ data, decompress }: { data: { location: CacheLocation; items: CacheItem[] | undefined }[]; decompress: (location: string, id: string) => void }) => {
 	const [selected, setSelected] = useState(() => (data.find(x => x.items) ?? data[0]).location.name);
-	const selectedData = useMemo(() => data.find(x => x.location.name === selected)!, [selected]);
+	const selectedData = useMemo(() => data.find(x => x.location.name === selected)!, [selected, data]);
 	const cacheContentRef = useRef<HTMLElement | null>(null);
+	const [showMisc, setShowMisc] = useState(false);
 	return (
 		<main className={styles.main}>
 			<nav className={styles.navbar}>
@@ -22,6 +23,9 @@ export const CacheViewer = ({ data }: { data: { location: CacheLocation; items: 
 						{x.location.name}
 					</button>
 				))}
+				<div>
+					<span>Show Miscellaneous</span> <input type="checkbox" onChange={x => setShowMisc(x.target.checked)} checked={showMisc} />
+				</div>
 			</nav>
 			<article className={styles.cacheView}>
 				<h1>{selectedData.location.name}</h1>
@@ -29,26 +33,32 @@ export const CacheViewer = ({ data }: { data: { location: CacheLocation; items: 
 					{selectedData.items === undefined ? (
 						<p>Nothing</p>
 					) : (
-						selectedData.items
-							.filter(x => x.type)
-							.map(item => (
-								<section key={item.id} className={styles.cacheItem} style={item.type?.mime.startsWith("image") ? { backgroundColor: "unset" } : {}}>
-									{item.type?.mime.startsWith("image") ? (
-										<img src={item.url} loading="lazy" />
-									) : item.type?.mime.startsWith("audio") ? (
-										<audio controls src={item.url}></audio>
-									) : item.type?.mime.startsWith("video") ? (
-										<video controls src={item.url}></video>
-									) : (
-										<div className={styles.downloadBox}>
-											{item.type?.mime}
-											<a href={item.url} download={`file.${item.type?.ext}`}>
-												Download
-											</a>
-										</div>
-									)}
-								</section>
-							))
+						selectedData.items.map(item => (
+							<section
+								key={item.id}
+								className={styles.cacheItem}
+								style={{
+									backgroundColor: item.type?.mime.startsWith("image") ? "unset" : "",
+									display: item.type?.mime.startsWith("image") || item.type?.mime.startsWith("audio") || item.type?.mime.startsWith("video") || showMisc ? "" : "none",
+								}}
+							>
+								{item.type?.mime.startsWith("image") ? (
+									<img src={item.url} loading="lazy" />
+								) : item.type?.mime.startsWith("audio") ? (
+									<audio controls src={item.url}></audio>
+								) : item.type?.mime.startsWith("video") ? (
+									<video controls src={item.url}></video>
+								) : (
+									<div className={styles.downloadBox}>
+										{item.type?.mime ?? "application/octet-stream"}
+										<a href={item.url} download={`file.${item.type?.ext ?? "bin"}`}>
+											Download
+										</a>
+										{item.type?.mime === "application/gzip" && <button onClick={() => decompress(selectedData.location.name, item.id)}>Decompress</button>}
+									</div>
+								)}
+							</section>
+						))
 					)}
 				</section>
 			</article>

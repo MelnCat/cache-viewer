@@ -1,4 +1,4 @@
-import { fileTypeFromBlob, FileTypeResult } from "file-type";
+import { FileTypeResult } from "file-type";
 import { decompress } from "wasm-gzip";
 import { fileType } from "../util/util";
 
@@ -12,6 +12,7 @@ export interface CacheItem {
 	type: FileTypeResult | undefined;
 	url: string;
 	file: File;
+	blob: Blob;
 }
 export class CacheLocation {
 	constructor(public name: string, protected scan: (cDrive: FileSystemDirectoryHandle, users: FileSystemDirectoryHandle[]) => Promise<UnprocessedCacheItem[] | undefined>) {}
@@ -23,17 +24,9 @@ export class CacheLocation {
 		return (
 			await Promise.all(
 				items.map(async x => {
-					let timeout = setTimeout(() => console.log(x.file, "takin ga while"), 10000);
 					const type = await fileType(x.file);
-					clearTimeout(timeout);
-					if (type?.mime === "application/gzip" && x.file.size < 10000000) {
-						const newBlob = new Blob([decompress(new Uint8Array(await x.file.arrayBuffer()))]);
-						const newType = await fileType(newBlob);
-						onUpdate(++done, items.length);
-						return { ...x, type: newType, blob: newBlob, url: URL.createObjectURL(newBlob) };
-					}
 					onUpdate(++done, items.length);
-					return { ...x, type, url: URL.createObjectURL(x.file) };
+					return { ...x, type, url: URL.createObjectURL(x.file), blob: x.file };
 				})
 			)
 		).sort((a, b) => b.file.lastModified - a.file.lastModified);
