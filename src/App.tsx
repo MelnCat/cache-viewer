@@ -22,12 +22,10 @@ function App() {
 			setStatus(`Loading ${location.name}...`);
 			const userDirectories = await filterEntries(await drive.getDirectoryHandle("Users"), "directory");
 			const cache = await location.scanForItems(drive, userDirectories, (curr, max) => setStatus(`Loading ${location.name}... (${curr}/${max})`));
-			console.log("GOT HERE");
 			if (!cache) newData.push({ location, items: undefined });
 			else newData.push({ location, items: cache });
 		}
 		setStatus("Loading viewer...");
-		console.log("GOT 2");
 		setData(newData);
 	};
 	const decompressFile = async (location: string, id: string) => {
