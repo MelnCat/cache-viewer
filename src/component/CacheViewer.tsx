@@ -28,7 +28,7 @@ export const CacheViewer = ({ data, decompress }: { data: { location: CacheLocat
 					<span>Show Miscellaneous</span> <input type="checkbox" onChange={x => setShowMisc(x.target.checked)} checked={showMisc} />
 				</div>
 				<div>
-					<span>Show Binary</span> <input type="checkbox" onChange={x => setShowBinary(x.target.checked)} checked={showMisc} />
+					<span>Show Binary</span> <input type="checkbox" onChange={x => setShowBinary(x.target.checked)} checked={showBinary} />
 				</div>
 			</nav>
 			<article className={styles.cacheView}>
