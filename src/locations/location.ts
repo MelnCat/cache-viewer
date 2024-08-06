@@ -22,13 +22,17 @@ export class CacheLocation {
 		if (!items) return;
 		let done = 0;
 		return (
-			await Promise.all(
+			(await Promise.all(
 				items.map(async x => {
-					const type = await fileType(x.file);
-					onUpdate(++done, items.length);
-					return { ...x, type, url: URL.createObjectURL(x.file), blob: x.file };
-				})
-			)
+					try {
+						const type = await fileType(x.file);
+						onUpdate(++done, items.length);
+						return { ...x, type, url: URL.createObjectURL(x.file), blob: x.file };
+					} catch {
+						return { ...x, type: undefined, url: "", blob: x.file }
+					}
+				}).map(x => Promise.race([x, new Promise(res => setTimeout(res => res(null), 30000))]) as Promise<CacheItem | null>)
+			)).filter(x => x !== null)
 		).sort((a, b) => b.file.lastModified - a.file.lastModified);
 	}
 }
