@@ -31,7 +31,7 @@ export class CacheLocation {
 					} catch {
 						return { ...x, type: undefined, url: "", blob: x.file }
 					}
-				}).map(x => Promise.race([x, new Promise(res => setTimeout(res => res(null), 30000))]) as Promise<CacheItem | null>)
+				}).map(x => Promise.race([x, new Promise(res => setTimeout(() => res(null), 30000))]) as Promise<CacheItem | null>)
 			)).filter(x => x !== null)
 		).sort((a, b) => b.file.lastModified - a.file.lastModified);
 	}
